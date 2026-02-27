@@ -64,3 +64,7 @@ hest = { git = "https://github.com/mahmoodlab/HEST.git", rev = "2c777630b1e8a74d
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.hatch.build.targets.wheel.force-include]
+"conf" = "seal/conf"
+"cache" = "seal/cache"

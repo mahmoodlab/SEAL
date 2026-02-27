@@ -31,11 +31,21 @@ from seal.models.gene_model import GeneMLP, SCGPTEncoder, unfreeze_scgpt, ModelD
 import torch.nn as nn
 from seal.models.da_model import AdversarialDiscriminator
 from seal.models.encoder_factory import encoder_factory
-
+from pathlib import Path
 
 HF_API_KEY = os.getenv("HF_API_KEY")
 
+def find_organ_ids():
+    rel_path = "cache/organ_ids.json"
+    id_file = Path(rel_path)
 
+    if not id_file.exists():
+        id_file = Path(__file__).resolve().parent.parent / rel_path
+        if not id_file.exists():
+            raise FileNotFoundError(f'Could not locate {rel_path} locally or in package.')
+    
+    with open(id_file, 'r') as f: 
+        return json.load(f) # You can return this directly without assigning it to a variable
 
 class ModelMixin(): 
     
@@ -533,8 +543,7 @@ class PatchRecEncoder(nn.Module):
         if self.use_adapter: 
             self.adapter = self.encoder.adapter
         
-        with open("cache/organ_ids.json", 'r') as f: 
-            organ_ids = json.load(f)
+        organ_ids = find_organ_ids()
         num_organs = len(organ_ids)
         
         if self.organ_token:

@@ -14,7 +14,22 @@ import subprocess
 import shutil
 import os
 
+from pathlib import Path
+import argparse
 
+def find_config_yaml():
+    # 1. Check for local override first (preserves original behavior)
+    local_config = Path("conf/config.yaml")
+    if local_config.exists():
+        return str(local_config)
+    
+    # 2. Fall back to the bundled package config
+    package_config = Path(__file__).resolve().parent.parent / "conf" / "config.yaml"
+    if package_config.exists():
+        return str(package_config)
+    
+    # 3. Last resort fallback to avoid a silent failure
+    raise FileNotFoundError("Could not find config.yaml locally or in the installed package.")
 
 def get_constants(norm='imagenet'):
     IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -781,7 +796,7 @@ def load_img_model_from_checkpoint(
     import argparse
     from seal.models.load_model import ModelMixin
     
-    default_config_path = argparse.Namespace(config='conf/config.yaml')
+    default_config_path = argparse.Namespace(config=find_config_yaml())
 
     if checkpoint_path is None:
         print(f"Warning: No image checkpoint provided for checkpoint_dir={checkpoint_dir}")
@@ -842,7 +857,7 @@ def load_gene_model_from_checkpoint(
     """
     from seal.models.load_model import ModelMixin
     
-    default_config_path = argparse.Namespace(config='conf/config.yaml')
+    default_config_path = argparse.Namespace(config=find_config_yaml())
     model_config = update_config(default_config_path)
     default_config = update_config(default_config_path)
     
